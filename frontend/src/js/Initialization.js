@@ -2,7 +2,7 @@ import {sendRequestSignUp} from "./DataSender.js";
 
 import {sendRequestLogIn} from "./DataSender.js";
 
-export function getInputRegistration() {
+export async function getInputRegistration() {
   const username2 = document.querySelector("#username2").value;
   const email = document.querySelector("#mail").value;
   const password2 = document.querySelector("#password2").value;
@@ -11,9 +11,9 @@ export function getInputRegistration() {
     email: email,
     password: password2,
   };
-  sendRequestSignUp(body2)
-    .then((data) => console.log(data))
-    .catch((err) => console.log(err));
+  const data = await sendRequestSignUp(body2);
+  console.log(data)
+
 }
 
 export function getInputLogIn(){
@@ -23,7 +23,6 @@ export function getInputLogIn(){
     email: email1,
     password: password1,
   };
-  sendRequestLogIn(body1)
-      .then((data) => console.log(data))
-      .catch((err) => console.log(err));
+  const data = sendRequestLogIn(body1);
+  console.log(data);
 }

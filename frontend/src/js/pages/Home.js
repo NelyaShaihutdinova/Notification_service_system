@@ -1,10 +1,12 @@
 import '../../css/StyleLogIn.css'
 import {getInputLogIn, getInputRegistration} from "../Initialization";
 import {switchForm} from "../FormSwitcher";
+import {connect} from "react-redux";
 
 export function Home() {
     return (
         <div>
+            {/*<h2>{this.props.user}</h2>*/}
             <div className="generalBlock" id="generalBlock">
                 <label className="tab active" id="LogInTab" onClick={switchForm}>Log in</label>
                 <label className="tab" id="SignUpTab" onClick={switchForm}>Sign up</label>
@@ -112,3 +114,11 @@ export function Home() {
         </div>
     );
 }
+
+// function mapStateToProps(state){
+//     return{
+//         user: state.userInfo.user
+//     }
+// }
+//
+// export default connect(mapStateToProps)(Home)

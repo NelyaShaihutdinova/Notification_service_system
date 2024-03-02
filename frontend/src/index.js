@@ -6,6 +6,9 @@ import './js/FormSwitcher';
 import './js/Initialization';
 import ErrorMessage from "./js/components/ErrorMessage";
 import {Router} from "./js/utils/Router";
+import {Provider} from "react-redux";
+import {createStore} from "redux";
+import rootReducer from "./js/reducers";
 
 // export function createApp(){
 //     const root = ReactDOM.createRoot(document.getElementById(""));
@@ -28,8 +31,11 @@ export function createErrorMessage(id, message) {
     );
 }
 
+const store = createStore(rootReducer)
 
 const root = ReactDOM.createRoot(document.getElementById("container1000"));
 root.render(
-    <Router/>
+    <Provider store={store}>
+        <Router/>
+    </Provider>
 );

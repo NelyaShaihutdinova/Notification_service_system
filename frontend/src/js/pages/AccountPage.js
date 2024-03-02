@@ -1,11 +1,14 @@
-import {useNavigate} from "react-router-dom";
+import {useLocation, useNavigate} from "react-router-dom";
 import {InformationPage} from "./InformationPage";
 import {SubscribePage} from "./SubscribePage";
 import {Home} from "./Home";
 import {switchFormForAccount} from "../SwitcherForAccount";
+import {connect} from "react-redux";
 
 export function AccountPage() {
     const nav = useNavigate();
+    console.log(JSON.parse(localStorage.getItem('data')))
+    const data = JSON.parse(localStorage.getItem('data'));
     return (<div>
             <div className="general" id="generalBlock" style={{
                 width: "100%",
@@ -19,14 +22,11 @@ export function AccountPage() {
                 // minHeight: "300px",
                 minHeight: "300px",
             }}>
+                <h2>sadcdsc {user}</h2>
                 <label className="tabT active" id="UserAccountTab" onClick={switchFormForAccount}>Account</label>
                 <label className="tabT" id="InformationTab" onClick={switchFormForAccount}>Information</label>
                 <label className="tabT" id="SubscribeTab" onClick={switchFormForAccount}>Subscribe</label>
                 <label className="tabT" id="LogOutTab" onClick={() => nav('/')}>Log Out</label>
-
-                {/*<button onClick={() => nav('/')} className="btn-new btnLogIn">Log out</button>*/}
-                {/*<button onClick={() => nav('/info')} className="btn-new btnLogIn">Information</button>*/}
-                {/*<button onClick={() => nav('/subscribe')} className="btn-new btnLogIn">Subscribe</button>*/}
                 <div className="tab-formT active">
                     <div className="logo">
                         <img
@@ -45,6 +45,7 @@ export function AccountPage() {
                             }}
                         />
                     </div>
+                    <pre>{JSON.stringify(data, null, 2)}</pre>
                     <p>Username: ...</p>
                     <p>Mail: ...</p>
                     <p>Telegram: ...</p>
@@ -63,3 +64,11 @@ export function AccountPage() {
         </div>
     )
 }
+
+function mapStateToProps(state){
+    return{
+        user: state.userInfo.user
+    }
+}
+
+export default connect(mapStateToProps)(AccountPage)
