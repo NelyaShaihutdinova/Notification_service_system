@@ -1,15 +1,109 @@
+import javax.xml.transform.stream.StreamSource
+import javax.xml.validation.SchemaFactory
+
 buildscript {
     ext {
         springBootVersion = '3.2.1'
     }
+
     repositories {
         mavenCentral()
     }
+
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
         classpath "io.spring.gradle:dependency-management-plugin:1.1.4"
     }
+
+    tasks.register('cleanOPI') {
+        group = 'OPI'
+        rootProject.subprojects.forEach {
+            dependsOn(it.tasks.named('clean'))
+        }
+    }
+
+    tasks.register('compileOPI', JavaCompile) {
+        group = 'OPI'
+        rootProject.subprojects.forEach {
+            dependsOn(it.tasks.named('compileJava'))
+        }
+    }
+
+    tasks.register('testOPI') {
+        group = 'OPI'
+        useJUnitPlatform()
+    }
+
+
+    tasks.register('buildOPI') {
+        group = 'OPI'
+        dependsOn(cleanOPI)
+        dependsOn(compileOPI)
+        rootProject.subprojects.forEach {
+            try {
+                dependsOn(it.tasks.named('bootJar'))
+            } catch (UnknownTaskException ignored) {
+                dependsOn(it.tasks.named('build'))
+            }
+        }
+    }
+
+    tasks.register('testFuncOPI') {
+        group = 'OPI'
+        rootProject.subprojects.forEach {
+            dependsOn(it.tasks.named('test'))
+        }
+    }
+
+    tasks.register('validateXml') {
+        group = 'OPI'
+        doLast {
+            fileTree('auth-api/src/main').include('**/*.xml').each { file ->
+                def schemaFactory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema")
+                def schema = schemaFactory.newSchema()
+                def validator = schema.newValidator()
+                try {
+                    validator.validate(new StreamSource(file as File))
+                    println "${file} is valid."
+                } catch (Exception e) {
+                    println "${file} is not valid because ${e.message}"
+                }
+            }
+        }
+    }
+
+    tasks.register('diffAndCommit') {
+        group = 'OPI'
+        doLast {
+            def classListFile = file('class-list.txt')
+            def classList = classListFile.readLines()
+            def gitDiff = "git diff --name-only".execute().text.trim()
+            def changedFiles = gitDiff.split('\n')
+            def relevantChanges = changedFiles.findAll { changedFile ->
+                classList.any { className ->
+                    changedFile.contains(className)
+                }
+            }
+            if (!relevantChanges.isEmpty()) {
+                println "Found changes in relevant classes: ${relevantChanges}"
+                exec {
+                    commandLine 'cmd', '/c', 'git', 'add', '.'
+                }
+                exec {
+                    commandLine 'cmd', '/c', 'git', 'commit', '-m', 'some change'
+                }
+                exec {
+                    commandLine 'cmd', '/c', 'git', 'push'
+                }
+
+                println "Changes committed successfully."
+            } else {
+                println "No changes in relevant classes."
+            }
+        }
+    }
 }
+
 
 allprojects {
     group = 'ru.ifmo'
@@ -17,14 +111,39 @@ allprojects {
 }
 
 subprojects {
-    apply plugin: 'java'
-    apply plugin: 'org.springframework.boot'
     apply plugin: 'io.spring.dependency-management'
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'java'
 
     sourceCompatibility = 17
+
 
     repositories {
         mavenCentral()
     }
+    dependencies {
+        testImplementation('com.intuit.karate:karate-apache:0.9.6') {
+            exclude group: 'org.slf4j', module: 'jul-to-slf4j'
+            exclude group: 'org.slf4j', module: 'slf4j-nop'
+        }
+        implementation('org.apache.maven.plugins:maven-surefire-plugin:2.22.2') {
+            exclude group: 'org.slf4j', module: 'slf4j-jdk14'
+            exclude group: 'org.slf4j', module: 'slf4j-nop'
+        }
+        testImplementation('org.junit.jupiter:junit-jupiter-api:5.4.2') {
+            exclude group: 'org.slf4j', module: 'slf4j-jdk14'
+            exclude group: 'org.slf4j', module: 'slf4j-nop'
+        }
+        testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.4.2') {
+            exclude group: 'org.slf4j', module: 'slf4j-jdk14'
+            exclude group: 'org.slf4j', module: 'slf4j-nop'
+        }
+        testImplementation('com.intuit.karate:karate-junit5:1.1.0') {
+            exclude group: 'org.slf4j', module: 'slf4j-jdk14'
+            exclude group: 'org.slf4j', module: 'slf4j-nop'
+        }
+    }
+    tasks.named('test', Test) {
+        useJUnitPlatform()
+    }
 }
-
