@@ -1,9 +1,9 @@
 Feature: UI
   Background:
-    * configure driver = {type: 'chrome', executable: 'C:\Users\Public\Desktop\Google Chrome.lnk', addOptions: ["--remote-allow-origins=*"]}
+    * configure driver = {type: 'chrome', executable: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', addOptions: ["--remote-allow-origins=*"]}
 
   Scenario: UI Test
-    Given driver "notification-system.com"
+    Given driver "http://notification-system.com"
     And input('label[id=SignUpTab]', Key.ENTER)
     And input('input[id=username2]', Key.ENTER)
     And input('input[id=username2]', 'abc')

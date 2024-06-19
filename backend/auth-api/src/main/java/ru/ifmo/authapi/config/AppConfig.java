@@ -29,7 +29,7 @@ public class AppConfig {
   public RestTemplate restTemplate() {
     RestTemplate template = new RestTemplate();
     template.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-
+    System.out.println("123");
     return template;
   }
 }
